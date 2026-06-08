@@ -15,7 +15,6 @@ from sklearn.metrics import (
 )
 import matplotlib.pyplot as plt
 import seaborn as sns
-import os
 
 # ============================================================
 # 1. LOAD DATA
@@ -102,51 +101,26 @@ print(f"  Accuracy : {accuracy:.4f}")
 print(f"  F1 Score : {f1:.4f}")
 
 # ============================================================
-# 4. MLFLOW LOGGING
+# 4. MLFLOW LOGGING (tanpa start_run karena mlflow run sudah handle)
 # ============================================================
 print("[4/4] Logging ke MLflow...")
 
-# Gunakan active run jika ada (dari mlflow run), buat baru jika tidak ada
-active_run = mlflow.active_run()
-if active_run:
-    run_id = active_run.info.run_id
-    with mlflow.start_run(run_id=run_id):
-        mlflow.log_param("n_estimators",      best_params['n_estimators'])
-        mlflow.log_param("max_depth",         best_params['max_depth'])
-        mlflow.log_param("min_samples_split", best_params['min_samples_split'])
-        mlflow.log_param("dataset",           "iris")
+mlflow.log_param("n_estimators",      best_params['n_estimators'])
+mlflow.log_param("max_depth",         str(best_params['max_depth']))
+mlflow.log_param("min_samples_split", best_params['min_samples_split'])
+mlflow.log_param("dataset",           "iris")
 
-        mlflow.log_metric("accuracy",   accuracy)
-        mlflow.log_metric("f1_score",   f1)
-        mlflow.log_metric("precision",  precision)
-        mlflow.log_metric("recall",     recall)
-        mlflow.log_metric("cv_mean",    cv_scores.mean())
-        mlflow.log_metric("cv_std",     cv_scores.std())
+mlflow.log_metric("accuracy",  accuracy)
+mlflow.log_metric("f1_score",  f1)
+mlflow.log_metric("precision", precision)
+mlflow.log_metric("recall",    recall)
+mlflow.log_metric("cv_mean",   cv_scores.mean())
+mlflow.log_metric("cv_std",    cv_scores.std())
 
-        mlflow.log_artifact("confusion_matrix.png")
-        mlflow.log_artifact("feature_importance.png")
-        mlflow.log_artifact("classification_report.txt")
+mlflow.log_artifact("confusion_matrix.png")
+mlflow.log_artifact("feature_importance.png")
+mlflow.log_artifact("classification_report.txt")
 
-        mlflow.sklearn.log_model(best_model, "model")
-else:
-    mlflow.set_experiment("Iris_Classification_CI")
-    with mlflow.start_run(run_name="RandomForest_CI"):
-        mlflow.log_param("n_estimators",      best_params['n_estimators'])
-        mlflow.log_param("max_depth",         best_params['max_depth'])
-        mlflow.log_param("min_samples_split", best_params['min_samples_split'])
-        mlflow.log_param("dataset",           "iris")
-
-        mlflow.log_metric("accuracy",   accuracy)
-        mlflow.log_metric("f1_score",   f1)
-        mlflow.log_metric("precision",  precision)
-        mlflow.log_metric("recall",     recall)
-        mlflow.log_metric("cv_mean",    cv_scores.mean())
-        mlflow.log_metric("cv_std",     cv_scores.std())
-
-        mlflow.log_artifact("confusion_matrix.png")
-        mlflow.log_artifact("feature_importance.png")
-        mlflow.log_artifact("classification_report.txt")
-
-        mlflow.sklearn.log_model(best_model, "model")
+mlflow.sklearn.log_model(best_model, "model")
 
 print("\n✅ Training selesai!")
