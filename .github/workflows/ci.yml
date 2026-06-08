@@ -1,0 +1,47 @@
+name: CI - MLflow Training
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install mlflow==2.19.0 scikit-learn==1.5.2 pandas numpy matplotlib seaborn
+
+      - name: Run MLflow Project
+        run: |
+          cd MLProject
+          mlflow run . --env-manager=local
+
+      - name: Upload artifacts to GitHub
+        uses: actions/upload-artifact@v3
+        with:
+          name: mlflow-artifacts
+          path: |
+            MLProject/mlruns/
+            MLProject/confusion_matrix.png
+            MLProject/feature_importance.png
+            MLProject/classification_report.txt
+
+      - name: Commit mlruns to repository
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add MLProject/mlruns/ || true
+          git add MLProject/*.png MLProject/*.txt || true
+          git diff --staged --quiet || git commit -m "Auto: update mlruns artifacts"
+          git push || true
